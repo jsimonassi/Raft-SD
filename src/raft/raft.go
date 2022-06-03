@@ -61,8 +61,12 @@ type Raft struct {
 	// Look at the paper's Figure 2 for a description of what
 	// state a Raft server must maintain.
 
-	currentTerm int        // Último termo que o servidor recebeu ?????
-	votedFor    int        // Id do candidato que recebeu voto
+	currentTerm int // Último termo que o servidor recebeu ?????
+	votedFor    int // Id do candidato que recebeu voto
+
+	//mensagens são enviadas pelo líder em intervalos especificados pelo tempo limite de pulsação .
+	heartbeatPulse chan bool
+	changeToLeader chan bool
 
 	// TODO: Vamos usar isso??
 	// log         []LogEntry //Dados que o líder recebe do cliente e envia para os seguidores (Versão uncommitted)
@@ -181,7 +185,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	rf.mu.Lock()         // bloqueia o servidor para que não receba votos enquanto está processando
 	defer rf.mu.Unlock() // libera o servidor para que outros possam receber votos ao retornar o método
 
-	if rf.currentTerm < args.Term { 
+	if rf.currentTerm < args.Term {
 		rf.becomeFollower(args.Term)
 	}
 
@@ -228,6 +232,27 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 //
 func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) bool {
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+	if ok {
+		if rf.state != CANDIDATE {
+			return ok
+		}
+
+		if rf.currentTerm < reply.Term {
+			rf.becomeFollower(reply.Term)
+			return ok
+		}
+
+		if reply.VoteGranted {
+			rf.voteCount++
+			//DPrintf("%d get the vote from %d, vote count: %d", rf.me, server, rf.voteCount)
+			if rf.voteCount == len(rf.peers)/2+1 {
+				//DPrintf("%d chanleader", rf.me)
+				rf.changeToLeader <- true
+			}
+		}
+	}
 	return ok
 }
 
@@ -311,8 +336,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	//TODO: Vamos usar isso??
 	// rf.log = append(rf.log, LogEntry{LogTerm: 0}) // inicializa o log com o termo 0
 	//TODO: Vamos usar isso??
-	//rf.chanHb = make(chan bool, 100)
-	// rf.chanLeader = make(chan bool, 100)
+	rf.heartbeatPulse = make(chan bool, 100)
+	rf.changeToLeader = make(chan bool, 100)
 	// rf.chanCommit = make(chan bool, 100)
 	rf.state = FOLLOWER // inicializa o estado como follower
 	rf.currentTerm = 0  // termo atual, inicialmente 0
@@ -325,7 +350,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			switch rf.state {
 			case FOLLOWER:
 				select {
-				// case <-rf.chanHb: //TODO: Vamos usar isso?? Lock aqui?
+				case <-rf.heartbeatPulse: //TODO: Vamos usar isso?? Lock aqui?
 				case <-time.After(time.Duration(rand.Int63()%300+300) * time.Millisecond): // Bloqueante até termine o time.After
 					rf.becomeCandidate()
 				}
@@ -333,19 +358,16 @@ func Make(peers []*labrpc.ClientEnd, me int,
 				rf.requestAllVotes()
 				//TODO: Vamos usar isso?? Lock e Unlock no codeBase
 				select {
-				// case <-rf.chanLeader:
-	
-				 	rf.becomeLeader()
-		
-				// case <-rf.chanHb:
-				 	rf.becomeFollower(rf.currentTerm)
-				// case <-time.After(time.Duration(rand.Int63()%300+300) * time.Millisecond):
-
-				 	rf.becomeCandidate()
+				case <-rf.changeToLeader: //Recebe o sinal de que o nó se tornou o lider
+					rf.becomeLeader()
+				case <-rf.heartbeatPulse: // Recebe uma pulsação
+					rf.becomeFollower(rf.currentTerm)
+				case <-time.After(time.Duration(rand.Int63()%300+300) * time.Millisecond): //Não recebeu nada e vai ter uma nova eleição (Se torna candidato)
+					rf.becomeCandidate()
 				}
 
 			case LEADER:
-				//TODO: Vamos usar isso?? 
+				//TODO: Vamos usar isso??
 				//rf.broadcastAppendEntries()
 				// time.Sleep(HBINTERVAL)
 			}
