@@ -17,19 +17,30 @@ package raft
 //   in the same server.
 //
 
-import "sync"
-import "labrpc"
+import (
+	"labrpc"
+	"math/rand"
+	"sync"
+	"time"
+)
 
 // import "bytes"
 // import "encoding/gob"
-
-
 
 //
 // as each Raft peer becomes aware that successive log entries are
 // committed, the peer should send an ApplyMsg to the service (or
 // tester) on the same server, via the applyCh passed to Make().
 //
+
+const (
+	LEADER StateType = iota
+	FOLLOWER
+	CANDIDATE
+)
+
+type StateType uint
+
 type ApplyMsg struct {
 	Index       int
 	Command     interface{}
@@ -50,14 +61,40 @@ type Raft struct {
 	// Look at the paper's Figure 2 for a description of what
 	// state a Raft server must maintain.
 
+	currentTerm int        // Último termo que o servidor recebeu ?????
+	votedFor    int        // Id do candidato que recebeu voto
+
+	// TODO: Vamos usar isso??
+	// log         []LogEntry //Dados que o líder recebe do cliente e envia para os seguidores (Versão uncommitted)
+
+	state     StateType // Estado atual do servidor
+	voteCount int       // Contador de votos recebidos
+
+	// Volatile state on all servers
+	// TODO: Vamos usar isso??
+	// commitIndex int // Índice do último log enviado pelo líder. (Já comitado)
+	// lastApplied int // Índice do último log aplicado a máquina. (Último estado válido do sistema)
+
+	// Volatile state on leaders
+	// TODO: Vamos usar isso??
+	// nextIndex  []int // Índice do próximo log que o líder deve enviar para cada seguidor.
+	// matchIndex []int // Índice do último log que o líder recebeu de cada seguidor.
+
 }
+
+//TODO: Vamos usar isso ??
+// type LogEntry struct {
+// 	LogIndex int // Índice do Log (Termo) recebido
+// 	LogTerm  int // Termo do Log recebido
+// 	// Cmd      interface{}  //TODO: Vamos usar isso??
+// }
 
 // return currentTerm and whether this server
 // believes it is the leader.
 func (rf *Raft) GetState() (int, bool) {
 
-	var term int
-	var isleader bool
+	var term int = rf.currentTerm          // atribui o termo atual
+	var isleader bool = rf.state == LEADER // verifica se o servidor é o líder
 	// Your code here (2A).
 	return term, isleader
 }
@@ -93,15 +130,17 @@ func (rf *Raft) readPersist(data []byte) {
 	}
 }
 
-
-
-
 //
 // example RequestVote RPC arguments structure.
 // field names must start with capital letters!
 //
 type RequestVoteArgs struct {
 	// Your data here (2A, 2B).
+	Term        int // termo do candidato
+	CandidateId int // id do candidato que esta requisitando voto
+	//TODO: Vamos usar isso??
+	// LastLogIndex int // último índice do log
+	// LastLogTerm  int // último termo do log (ultimo estado da maquina aprovado)
 }
 
 //
@@ -110,13 +149,52 @@ type RequestVoteArgs struct {
 //
 type RequestVoteReply struct {
 	// Your data here (2A).
+	Term        int  // Número do período atual - Eleição em que ela se encontra
+	VoteGranted bool // true se o candidato recebeu o voto
+}
+
+func (rf *Raft) requestAllVotes() {
+	// rf.mu.Lock()
+	args := &RequestVoteArgs{ // cria o objeto de argumentos
+		Term:        rf.currentTerm,
+		CandidateId: rf.me,
+		//TODO: Vamos usar isso??
+		// LastLogIndex: rf.getLastIndex(),
+		// LastLogTerm:  rf.getLastTerm(),
+	}
+	// rf.mu.Unlock()
+	for i := range rf.peers { //Itera sobre os servidores requisitando os votos
+		if i != rf.me {
+			go func(i int) {
+				rf.sendRequestVote(i, args, &RequestVoteReply{})
+			}(i)
+		}
+	}
 }
 
 //
 // example RequestVote RPC handler.
+// Método invocado via chamada RPC por outro servidor
 //
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Your code here (2A, 2B).
+	rf.mu.Lock()         // bloqueia o servidor para que não receba votos enquanto está processando
+	defer rf.mu.Unlock() // libera o servidor para que outros possam receber votos ao retornar o método
+
+	if rf.currentTerm < args.Term { 
+		rf.becomeFollower(args.Term)
+	}
+
+	reply.Term = rf.currentTerm // atualiza o termo do candidato
+
+	//TODO: Validar isso aqui??
+	if rf.votedFor == -1 { // se não votou nenhum candidato
+		rf.votedFor = args.CandidateId // atribui o candidato que está requisitando voto (Pra quem ele votou)
+		reply.VoteGranted = true       // Flag que confirma o voto
+	} else { //Se ele não votou em ninguem, ele não é um seguidor
+		reply.VoteGranted = false
+	}
+
 }
 
 //
@@ -153,7 +231,6 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	return ok
 }
 
-
 //
 // the service using Raft (e.g. a k/v server) wants to start
 // agreement on the next command to be appended to Raft's log. if this
@@ -174,7 +251,6 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 
 	// Your code here (2B).
 
-
 	return index, term, isLeader
 }
 
@@ -186,6 +262,33 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 //
 func (rf *Raft) Kill() {
 	// Your code here, if desired.
+}
+
+func (rf *Raft) becomeFollower(term int) {
+	rf.state = FOLLOWER   //Nó atual ganha status de seguidor
+	rf.currentTerm = term // atualiza o termo do nó
+	rf.votedFor = -1
+}
+
+func (rf *Raft) becomeCandidate() {
+	rf.state = CANDIDATE                // Se torna candidato
+	rf.currentTerm = rf.currentTerm + 1 // Incrementa o termo pq ele votou
+	rf.voteCount = 1                    // Diz que ele votou
+	rf.votedFor = rf.me                 // Votou em si mesmo, pois é candidato.
+}
+
+func (rf *Raft) becomeLeader() {
+	rf.state = LEADER
+	rf.votedFor = -1
+
+	// rf.nextIndex = make([]int, len(rf.peers))
+	// rf.matchIndex = make([]int, len(rf.peers))
+	// for i := range rf.peers {
+	// 	rf.nextIndex[i] = rf.getLastIndex() + 1
+	// 	rf.matchIndex[i] = 0
+	// }
+
+	//DPrintf("%d become a leader", rf.me)
 }
 
 //
@@ -205,12 +308,52 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.peers = peers
 	rf.persister = persister
 	rf.me = me
+	//TODO: Vamos usar isso??
+	// rf.log = append(rf.log, LogEntry{LogTerm: 0}) // inicializa o log com o termo 0
+	//TODO: Vamos usar isso??
+	//rf.chanHb = make(chan bool, 100)
+	// rf.chanLeader = make(chan bool, 100)
+	// rf.chanCommit = make(chan bool, 100)
+	rf.state = FOLLOWER // inicializa o estado como follower
+	rf.currentTerm = 0  // termo atual, inicialmente 0
+	rf.votedFor = -1    // inicializa com -1, pois ninguém votou
 
 	// Your initialization code here (2A, 2B, 2C).
 
+	go func() {
+		for { // Loop infinito
+			switch rf.state {
+			case FOLLOWER:
+				select {
+				// case <-rf.chanHb: //TODO: Vamos usar isso?? Lock aqui?
+				case <-time.After(time.Duration(rand.Int63()%300+300) * time.Millisecond): // Bloqueante até termine o time.After
+					rf.becomeCandidate()
+				}
+			case CANDIDATE:
+				rf.requestAllVotes()
+				//TODO: Vamos usar isso?? Lock e Unlock no codeBase
+				select {
+				// case <-rf.chanLeader:
+	
+				 	rf.becomeLeader()
+		
+				// case <-rf.chanHb:
+				 	rf.becomeFollower(rf.currentTerm)
+				// case <-time.After(time.Duration(rand.Int63()%300+300) * time.Millisecond):
+
+				 	rf.becomeCandidate()
+				}
+
+			case LEADER:
+				//TODO: Vamos usar isso?? 
+				//rf.broadcastAppendEntries()
+				// time.Sleep(HBINTERVAL)
+			}
+		}
+	}() //Chama função anonima para iniciar o loop de execução em background
+
 	// initialize from state persisted before a crash
 	rf.readPersist(persister.ReadRaftState())
-
 
 	return rf
 }
