@@ -369,7 +369,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			case LEADER:
 				//TODO: Vamos usar isso??
 				//rf.broadcastAppendEntries()
-				// time.Sleep(HBINTERVAL)
+				time.Sleep(100 * time.Millisecond)
 			}
 		}
 	}() //Chama função anonima para iniciar o loop de execução em background
