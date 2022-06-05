@@ -18,14 +18,12 @@ package raft
 //
 
 import (
+	"fmt"
 	"labrpc"
 	"math/rand"
 	"sync"
 	"time"
 )
-
-// import "bytes"
-// import "encoding/gob"
 
 //
 // as each Raft peer becomes aware that successive log entries are
@@ -68,35 +66,13 @@ type Raft struct {
 	heartbeatPulse chan bool
 	changeToLeader chan bool
 
-	// TODO: Vamos usar isso??
-	// log         []LogEntry //Dados que o líder recebe do cliente e envia para os seguidores (Versão uncommitted)
-
 	state     StateType // Estado atual do servidor
 	voteCount int       // Contador de votos recebidos
-
-	// Volatile state on all servers
-	// TODO: Vamos usar isso??
-	// commitIndex int // Índice do último log enviado pelo líder. (Já comitado)
-	// lastApplied int // Índice do último log aplicado a máquina. (Último estado válido do sistema)
-
-	// Volatile state on leaders
-	// TODO: Vamos usar isso??
-	// nextIndex  []int // Índice do próximo log que o líder deve enviar para cada seguidor.
-	// matchIndex []int // Índice do último log que o líder recebeu de cada seguidor.
-
 }
-
-//TODO: Vamos usar isso ??
-// type LogEntry struct {
-// 	LogIndex int // Índice do Log (Termo) recebido
-// 	LogTerm  int // Termo do Log recebido
-// 	// Cmd      interface{}  //TODO: Vamos usar isso??
-// }
 
 // return currentTerm and whether this server
 // believes it is the leader.
 func (rf *Raft) GetState() (int, bool) {
-
 	var term int = rf.currentTerm          // atribui o termo atual
 	var isleader bool = rf.state == LEADER // verifica se o servidor é o líder
 	// Your code here (2A).
@@ -142,9 +118,6 @@ type RequestVoteArgs struct {
 	// Your data here (2A, 2B).
 	Term        int // termo do candidato
 	CandidateId int // id do candidato que esta requisitando voto
-	//TODO: Vamos usar isso??
-	// LastLogIndex int // último índice do log
-	// LastLogTerm  int // último termo do log (ultimo estado da maquina aprovado)
 }
 
 //
@@ -158,15 +131,10 @@ type RequestVoteReply struct {
 }
 
 func (rf *Raft) requestAllVotes() {
-	// rf.mu.Lock()
 	args := &RequestVoteArgs{ // cria o objeto de argumentos
 		Term:        rf.currentTerm,
 		CandidateId: rf.me,
-		//TODO: Vamos usar isso??
-		// LastLogIndex: rf.getLastIndex(),
-		// LastLogTerm:  rf.getLastTerm(),
 	}
-	// rf.mu.Unlock()
 	for i := range rf.peers { //Itera sobre os servidores requisitando os votos
 		if i != rf.me {
 			go func(i int) {
@@ -191,14 +159,12 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 
 	reply.Term = rf.currentTerm // atualiza o termo do candidato
 
-	//TODO: Validar isso aqui??
 	if rf.votedFor == -1 { // se não votou nenhum candidato
 		rf.votedFor = args.CandidateId // atribui o candidato que está requisitando voto (Pra quem ele votou)
 		reply.VoteGranted = true       // Flag que confirma o voto
 	} else { //Se ele não votou em ninguem, ele não é um seguidor
 		reply.VoteGranted = false
 	}
-
 }
 
 //
@@ -246,9 +212,9 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 
 		if reply.VoteGranted {
 			rf.voteCount++
-			//DPrintf("%d get the vote from %d, vote count: %d", rf.me, server, rf.voteCount)
+			fmt.Printf("%d: Recebeu o voto de: %d - Quantidade de votos: %d\n", rf.me, server, rf.voteCount)
 			if rf.voteCount == len(rf.peers)/2+1 {
-				//DPrintf("%d chanleader", rf.me)
+				fmt.Printf("Opa, Tô virando lider: %d \n", rf.me)
 				rf.changeToLeader <- true
 			}
 		}
@@ -305,15 +271,11 @@ func (rf *Raft) becomeCandidate() {
 func (rf *Raft) becomeLeader() {
 	rf.state = LEADER
 	rf.votedFor = -1
+	fmt.Printf("%d: Virou o lider \n", rf.me)
+}
 
-	// rf.nextIndex = make([]int, len(rf.peers))
-	// rf.matchIndex = make([]int, len(rf.peers))
-	// for i := range rf.peers {
-	// 	rf.nextIndex[i] = rf.getLastIndex() + 1
-	// 	rf.matchIndex[i] = 0
-	// }
-
-	//DPrintf("%d become a leader", rf.me)
+func (rf *Raft) addHeartBeats() {
+	rf.heartbeatPulse <- true
 }
 
 //
@@ -333,12 +295,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.peers = peers
 	rf.persister = persister
 	rf.me = me
-	//TODO: Vamos usar isso??
-	// rf.log = append(rf.log, LogEntry{LogTerm: 0}) // inicializa o log com o termo 0
-	//TODO: Vamos usar isso??
 	rf.heartbeatPulse = make(chan bool, 100)
 	rf.changeToLeader = make(chan bool, 100)
-	// rf.chanCommit = make(chan bool, 100)
 	rf.state = FOLLOWER // inicializa o estado como follower
 	rf.currentTerm = 0  // termo atual, inicialmente 0
 	rf.votedFor = -1    // inicializa com -1, pois ninguém votou
@@ -350,13 +308,12 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			switch rf.state {
 			case FOLLOWER:
 				select {
-				case <-rf.heartbeatPulse: //TODO: Vamos usar isso?? Lock aqui?
+				case <-rf.heartbeatPulse:
 				case <-time.After(time.Duration(rand.Int63()%300+300) * time.Millisecond): // Bloqueante até termine o time.After
 					rf.becomeCandidate()
 				}
 			case CANDIDATE:
 				rf.requestAllVotes()
-				//TODO: Vamos usar isso?? Lock e Unlock no codeBase
 				select {
 				case <-rf.changeToLeader: //Recebe o sinal de que o nó se tornou o lider
 					rf.becomeLeader()
@@ -367,8 +324,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 				}
 
 			case LEADER:
-				//TODO: Vamos usar isso??
-				//rf.broadcastAppendEntries()
+				rf.addHeartBeats()
 				time.Sleep(100 * time.Millisecond)
 			}
 		}

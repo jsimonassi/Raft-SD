@@ -17,13 +17,13 @@ package raft
 //   in the same server.
 //
 
-import "sync"
 import (
-	"labrpc"
-	"time"
-	"math/rand"
 	"bytes"
 	"encoding/gob"
+	"labrpc"
+	"math/rand"
+	"sync"
+	"time"
 )
 
 // import "bytes"
@@ -45,7 +45,7 @@ const (
 	HBINTERVAL = 100 * time.Millisecond
 )
 const (
-	LEADER    StateType = iota
+	LEADER StateType = iota
 	FOLLOWER
 	CANDIDATE
 )
@@ -71,6 +71,7 @@ type Raft struct {
 	state     StateType
 	voteCount int
 
+	//mensagens são enviadas pelo líder em intervalos especificados pelo tempo limite de pulsação .
 	chanHb     chan bool
 	chanLeader chan bool
 	chanCommit chan bool
@@ -164,7 +165,7 @@ type RequestVoteReply struct {
 //
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Your code here (2A, 2B).
-	//DPrintf("%d Receive vote request from %d", rf.me, args.CandidateId)
+	DPrintf("%d Receive vote request from %d", rf.me, args.CandidateId)
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 	//DPrintf("term1: %d term2: %d", rf.currentTerm, args.CandidateId)
@@ -322,7 +323,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	}
 
 	// append entries
-	rf.log = rf.log[: args.PreLogIndex+1]
+	rf.log = rf.log[:args.PreLogIndex+1]
 	rf.log = append(rf.log, args.Entries...)
 	rf.persist()
 	reply.Success = true
