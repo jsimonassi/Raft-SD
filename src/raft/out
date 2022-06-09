@@ -2,30 +2,9 @@ Test (2A): initial election ...
 2: Recebeu o voto de: 1 - Quantidade de votos: 2
 Opa, Tô virando lider: 2 
 2: Virou o lider 
-0: Recebeu o voto de: 1 - Quantidade de votos: 2
-Opa, Tô virando lider: 0 
-0: Recebeu o voto de: 2 - Quantidade de votos: 3
-0: Virou o lider 
-1: Recebeu o voto de: 2 - Quantidade de votos: 2
-Opa, Tô virando lider: 1 
-1: Virou o lider 
 0: Recebeu o voto de: 2 - Quantidade de votos: 2
 Opa, Tô virando lider: 0 
 0: Virou o lider 
-2: Recebeu o voto de: 0 - Quantidade de votos: 2
-Opa, Tô virando lider: 2 
-2: Recebeu o voto de: 1 - Quantidade de votos: 3
-2: Virou o lider 
-1: Recebeu o voto de: 0 - Quantidade de votos: 2
-Opa, Tô virando lider: 1 
-1: Virou o lider 
-0: Recebeu o voto de: 2 - Quantidade de votos: 2
-Opa, Tô virando lider: 0 
-0: Recebeu o voto de: 1 - Quantidade de votos: 3
-0: Virou o lider 
-2: Recebeu o voto de: 1 - Quantidade de votos: 2
-Opa, Tô virando lider: 2 
-2: Virou o lider 
 1: Recebeu o voto de: 2 - Quantidade de votos: 2
 Opa, Tô virando lider: 1 
 1: Recebeu o voto de: 0 - Quantidade de votos: 3
@@ -33,12 +12,37 @@ Opa, Tô virando lider: 1
 0: Recebeu o voto de: 1 - Quantidade de votos: 2
 Opa, Tô virando lider: 0 
 0: Recebeu o voto de: 2 - Quantidade de votos: 3
+0: Virou o lider 
+2: Recebeu o voto de: 0 - Quantidade de votos: 2
+Opa, Tô virando lider: 2 
+2: Recebeu o voto de: 1 - Quantidade de votos: 3
+2: Virou o lider 
+1: Recebeu o voto de: 0 - Quantidade de votos: 2
+Opa, Tô virando lider: 1 
+1: Recebeu o voto de: 2 - Quantidade de votos: 3
+1: Virou o lider 
+0: Recebeu o voto de: 2 - Quantidade de votos: 2
+Opa, Tô virando lider: 0 
+0: Virou o lider 
+2: Recebeu o voto de: 1 - Quantidade de votos: 2
+Opa, Tô virando lider: 2 
+2: Virou o lider 
+1: Recebeu o voto de: 0 - Quantidade de votos: 2
+Opa, Tô virando lider: 1 
+1: Recebeu o voto de: 2 - Quantidade de votos: 3
+1: Virou o lider 
+0: Recebeu o voto de: 2 - Quantidade de votos: 2
+Opa, Tô virando lider: 0 
 0: Virou o lider 
 warning: term changed even though there were no failures  ... Passed
 Test (2A): election after network failure ...
-2: Recebeu o voto de: 1 - Quantidade de votos: 2
+2: Recebeu o voto de: 0 - Quantidade de votos: 2
 Opa, Tô virando lider: 2 
+2: Recebeu o voto de: 1 - Quantidade de votos: 3
 2: Virou o lider 
+1: Recebeu o voto de: 2 - Quantidade de votos: 2
+Opa, Tô virando lider: 1 
+1: Virou o lider 
 1: Recebeu o voto de: 2 - Quantidade de votos: 2
 Opa, Tô virando lider: 1 
 1: Virou o lider 
@@ -48,72 +52,51 @@ Opa, Tô virando lider: 2
 0: Recebeu o voto de: 2 - Quantidade de votos: 2
 Opa, Tô virando lider: 0 
 0: Virou o lider 
-1: Recebeu o voto de: 2 - Quantidade de votos: 2
-Opa, Tô virando lider: 1 
-1: Virou o lider 
-0: Recebeu o voto de: 2 - Quantidade de votos: 2
-Opa, Tô virando lider: 0 
-0: Virou o lider 
-2: Recebeu o voto de: 0 - Quantidade de votos: 2
-Opa, Tô virando lider: 2 
-2: Recebeu o voto de: 1 - Quantidade de votos: 3
-2: Virou o lider 
-2: Recebeu o voto de: 0 - Quantidade de votos: 2
-Opa, Tô virando lider: 2 
-2: Virou o lider 
-0: Recebeu o voto de: 2 - Quantidade de votos: 2
-Opa, Tô virando lider: 0 
-0: Virou o lider 
-1: Recebeu o voto de: 0 - Quantidade de votos: 2
-Opa, Tô virando lider: 1 
-1: Recebeu o voto de: 2 - Quantidade de votos: 3
-1: Virou o lider 
-0: Recebeu o voto de: 1 - Quantidade de votos: 2
-Opa, Tô virando lider: 0 
-0: Recebeu o voto de: 2 - Quantidade de votos: 3
-0: Virou o lider 
-2: Recebeu o voto de: 0 - Quantidade de votos: 2
-Opa, Tô virando lider: 2 
-2: Recebeu o voto de: 1 - Quantidade de votos: 3
-2: Virou o lider 
-2: Recebeu o voto de: 0 - Quantidade de votos: 2
-Opa, Tô virando lider: 2 
-2: Recebeu o voto de: 1 - Quantidade de votos: 3
-2: Virou o lider 
-1: Recebeu o voto de: 0 - Quantidade de votos: 2
-Opa, Tô virando lider: 1 
-1: Virou o lider 
-0: Recebeu o voto de: 2 - Quantidade de votos: 2
-Opa, Tô virando lider: 0 
-0: Virou o lider 
-2: Recebeu o voto de: 1 - Quantidade de votos: 2
-Opa, Tô virando lider: 2 
-2: Virou o lider 
-1: Recebeu o voto de: 0 - Quantidade de votos: 2
-Opa, Tô virando lider: 1 
-1: Recebeu o voto de: 2 - Quantidade de votos: 3
-1: Virou o lider 
-0: Recebeu o voto de: 1 - Quantidade de votos: 2
-Opa, Tô virando lider: 0 
-0: Recebeu o voto de: 2 - Quantidade de votos: 3
-0: Virou o lider 
-2: Recebeu o voto de: 1 - Quantidade de votos: 2
-Opa, Tô virando lider: 2 
-2: Virou o lider 
-1: Recebeu o voto de: 2 - Quantidade de votos: 2
-Opa, Tô virando lider: 1 
-1: Recebeu o voto de: 0 - Quantidade de votos: 3
-1: Virou o lider 
 0: Recebeu o voto de: 2 - Quantidade de votos: 2
 Opa, Tô virando lider: 0 
 0: Recebeu o voto de: 1 - Quantidade de votos: 3
 0: Virou o lider 
+2: Recebeu o voto de: 1 - Quantidade de votos: 2
+Opa, Tô virando lider: 2 
+2: Virou o lider 
 2: Recebeu o voto de: 1 - Quantidade de votos: 2
 Opa, Tô virando lider: 2 
 2: Recebeu o voto de: 0 - Quantidade de votos: 3
 2: Virou o lider 
 1: Recebeu o voto de: 2 - Quantidade de votos: 2
 Opa, Tô virando lider: 1 
+1: Recebeu o voto de: 0 - Quantidade de votos: 3
+1: Virou o lider 
+2: Recebeu o voto de: 1 - Quantidade de votos: 2
+Opa, Tô virando lider: 2 
+2: Virou o lider 
+0: Recebeu o voto de: 1 - Quantidade de votos: 2
+Opa, Tô virando lider: 0 
+0: Recebeu o voto de: 2 - Quantidade de votos: 3
+0: Virou o lider 
+1: Recebeu o voto de: 2 - Quantidade de votos: 2
+Opa, Tô virando lider: 1 
+1: Virou o lider 
+2: Recebeu o voto de: 1 - Quantidade de votos: 2
+Opa, Tô virando lider: 2 
+2: Recebeu o voto de: 0 - Quantidade de votos: 3
+2: Virou o lider 
+0: Recebeu o voto de: 2 - Quantidade de votos: 2
+Opa, Tô virando lider: 0 
+0: Virou o lider 
+1: Recebeu o voto de: 0 - Quantidade de votos: 2
+Opa, Tô virando lider: 1 
+1: Recebeu o voto de: 2 - Quantidade de votos: 3
+1: Virou o lider 
+2: Recebeu o voto de: 1 - Quantidade de votos: 2
+Opa, Tô virando lider: 2 
+2: Virou o lider 
+0: Recebeu o voto de: 2 - Quantidade de votos: 2
+Opa, Tô virando lider: 0 
+0: Recebeu o voto de: 1 - Quantidade de votos: 3
+0: Virou o lider 
+1: Recebeu o voto de: 2 - Quantidade de votos: 2
+Opa, Tô virando lider: 1 
 1: Virou o lider 
 0: Recebeu o voto de: 1 - Quantidade de votos: 2
 Opa, Tô virando lider: 0 
@@ -121,18 +104,23 @@ Opa, Tô virando lider: 0
 1: Recebeu o voto de: 0 - Quantidade de votos: 2
 Opa, Tô virando lider: 1 
 1: Virou o lider 
+2: Recebeu o voto de: 1 - Quantidade de votos: 2
+Opa, Tô virando lider: 2 
+2: Virou o lider 
 0: Recebeu o voto de: 2 - Quantidade de votos: 2
 Opa, Tô virando lider: 0 
-0: Recebeu o voto de: 1 - Quantidade de votos: 3
 0: Virou o lider 
+0: Recebeu o voto de: 2 - Quantidade de votos: 2
+Opa, Tô virando lider: 0 
+0: Virou o lider 
+1: Recebeu o voto de: 0 - Quantidade de votos: 2
+Opa, Tô virando lider: 1 
+1: Recebeu o voto de: 2 - Quantidade de votos: 3
+1: Virou o lider 
 2: Recebeu o voto de: 0 - Quantidade de votos: 2
 Opa, Tô virando lider: 2 
 2: Recebeu o voto de: 1 - Quantidade de votos: 3
 2: Virou o lider 
-0: Recebeu o voto de: 1 - Quantidade de votos: 2
-Opa, Tô virando lider: 0 
-0: Recebeu o voto de: 2 - Quantidade de votos: 3
-0: Virou o lider 
   ... Passed
 PASS
-ok  	raft	7.646s
+ok  	raft	7.150s

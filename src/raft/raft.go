@@ -18,7 +18,7 @@ package raft
 //
 
 import (
-	"fmt"
+	// "fmt"
 	"labrpc"
 	"math/rand"
 	"sync"
@@ -200,7 +200,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
-	if ok {
+	if ok { //Se servidor respondeu com sucesso
 		if rf.state != CANDIDATE {
 			return ok
 		}
@@ -212,9 +212,9 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 
 		if reply.VoteGranted {
 			rf.voteCount++
-			fmt.Printf("%d: Recebeu o voto de: %d - Quantidade de votos: %d\n", rf.me, server, rf.voteCount)
+			// fmt.Printf("%d: Recebeu o voto de: %d - Quantidade de votos: %d\n", rf.me, server, rf.voteCount)
 			if rf.voteCount == len(rf.peers)/2+1 {
-				fmt.Printf("Opa, Tô virando lider: %d \n", rf.me)
+				// fmt.Printf("Opa, Tô virando lider: %d \n", rf.me)
 				rf.changeToLeader <- true
 			}
 		}
@@ -271,7 +271,7 @@ func (rf *Raft) becomeCandidate() {
 func (rf *Raft) becomeLeader() {
 	rf.state = LEADER
 	rf.votedFor = -1
-	fmt.Printf("%d: Virou o lider \n", rf.me)
+	// fmt.Printf("%d: Virou o lider \n", rf.me)
 }
 
 func (rf *Raft) addHeartBeats() {
